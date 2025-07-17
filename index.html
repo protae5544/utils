@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการเอกสาร - กรมการจัดหางาน</title>
+    
+    <!-- THSarabunNew Subset Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;600&text=%0A%20!%22%23%24%25%26\'()*%2B%2C-.%2F0123456789%3A%3B%3C%3D%3E%3F%40ABCDEFGHIJKLMNOPQRSTUVWXYZ%5B%5C%5D%5E_%60abcdefghijklmnopqrstuvwxyz%7B%7C%7D%E0%B8%81%E0%B8%82%E0%B8%84%E0%B8%87%E0%B8%88%E0%B8%89%E0%B8%8A%E0%B8%8B%E0%B8%8D%E0%B8%8E%E0%B8%90%E0%B8%93%E0%B8%94%E0%B8%95%E0%B8%96%E0%B8%97%E0%B8%98%E0%B8%99%E0%B8%9A%E0%B8%9B%E0%B8%9C%E0%B8%9E%E0%B8%9F%E0%B8%A0%E0%B8%A1%E0%B8%A2%E0%B8%A3%E0%B8%A4%E0%B8%A5%E0%B8%A7%E0%B8%A8%E0%B8%A9%E0%B8%AA%E0%B8%AB%E0%B8%AD%E0%B8%B0%E0%B8%B1%E0%B8%B2%E0%B8%B3%E0%B8%B4%E0%B8%B5%E0%B8%B6%E0%B8%B7%E0%B8%B8%E0%B8%B9%E0%B9%80%E0%B9%81%E0%B9%82%E0%B9%83%E0%B9%84%E0%B9%87%E0%B9%88%E0%B9%89%E0%B9%8C&display=swap');
+
+        .thsarabun-light {
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 300;
+            font-style: normal;
+        }
+
+        .thsarabun-semibold {
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        .thsarabun {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .thsarabun.light { font-weight: 300; }
+        .thsarabun.semibold { font-weight: 600; }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 40px 50px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 450px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2em;
+            font-weight: 600;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            font-weight: 300;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        input[type="password"] {
+            width: calc(100% - 24px);
+            padding: 15px 12px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+            transform: translateY(-1px);
+        }
+
+        button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .panel-button {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            margin-top: 15px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .panel-button:hover {
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.3);
+        }
+
+        .panel-button.bt50 {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+        }
+
+        .panel-button.bt50:hover {
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.3);
+        }
+
+        .panel-button.worker {
+            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+        }
+
+        .panel-button.worker:hover {
+            box-shadow: 0 8px 25px rgba(156, 39, 176, 0.3);
+        }
+
+        #logout-button {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            margin-top: 30px;
+        }
+
+        #logout-button:hover {
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
+        }
+
+        #login-error-message {
+            color: #f44336;
+            margin-top: 15px;
+            font-size: 0.9em;
+            min-height: 1.2em;
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 300;
+        }
+
+        #panel-section {
+            display: none;
+        }
+
+        .security-note {
+            font-size: 0.8em;
+            color: #95a5a6;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(149, 165, 166, 0.1);
+            border: 1px dashed #bdc3c7;
+            border-radius: 8px;
+            text-align: left;
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 300;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .feature-desc {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 300;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 30px 25px;
+            }
+            
+            h1 {
+                font-size: 1.6em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="login-section">
+            <div class="logo">📋</div>
+            <h1 class="thsarabun semibold">ระบบจัดการเอกสาร</h1>
+            <p class="subtitle thsarabun light">กรมการจัดหางาน กระทรวงแรงงาน</p>
+            
+            <input type="password" id="password-input" placeholder="รหัสผ่าน" class="thsarabun light">
+            <button id="login-button" class="thsarabun semibold">เข้าสู่ระบบ</button>
+            <p id="login-error-message" class="thsarabun light"></p>
+            
+            <div class="security-note">
+                <strong class="thsarabun semibold">หมายเหตุ:</strong> 
+                <span class="thsarabun light">ระบบนี้ใช้สำหรับการสาธิตเท่านั้น รหัสผ่านถูกกำหนดไว้ล่วงหน้าและไม่เหมาะสำหรับการใช้งานจริง</span>
+            </div>
+        </div>
+
+        <div id="panel-section">
+            <div class="logo">🏢</div>
+            <h1 class="thsarabun semibold">ศูนย์ควบคุมเอกสาร</h1>
+            <p class="subtitle thsarabun light">
+                <span class="status-indicator"></span>
+                ระบบพร้อมใช้งาน
+            </p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-title thsarabun semibold">📄 แบบฟอร์ม BT.50</div>
+                    <div class="feature-desc thsarabun light">จัดการแบบฟอร์มใบอนุญาทำงานสำหรับคนต่างด้าว</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title thsarabun semibold">🧾 ใบเสร็จรับเงิน</div>
+                    <div class="feature-desc thsarabun light">สร้างและจัดการใบเสร็จรับเงินค่าธรรมเนียม</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title thsarabun semibold">👥 ข้อมูลคนงาน</div>
+                    <div class="feature-desc thsarabun light">จัดการข้อมูลประวัติคนงานต่างด้าว</div>
+                </div>
+            </div>
+            
+            <button id="bt50-link" class="panel-button bt50 thsarabun semibold">แบบฟอร์ม BT.50</button>
+            <button id="receipt-link" class="panel-button thsarabun semibold">ใบเสร็จรับเงิน</button>
+            <button id="worker-link" class="panel-button worker thsarabun semibold">ข้อมูลคนงาน</button>
+            <button id="logout-button" class="thsarabun semibold">ออกจากระบบ</button>
+        </div>
+    </div>
+
+    <script>
+        const loginSection = document.getElementById('login-section');
+        const panelSection = document.getElementById('panel-section');
+        const passwordInput = document.getElementById('password-input');
+        const loginButton = document.getElementById('login-button');
+        const loginErrorMessage = document.getElementById('login-error-message');
+
+        const bt50Link = document.getElementById('bt50-link');
+        const receiptLink = document.getElementById('receipt-link');
+        const workerLink = document.getElementById('worker-link');
+        const logoutButton = document.getElementById('logout-button');
+
+        // รหัสผ่านที่กำหนดไว้ล่วงหน้า (สำหรับการสาธิตเท่านั้น)
+        const CORRECT_PASSWORD = "admin123";
+
+        // ฟังก์ชันเข้าสู่ระบบ
+        function performLogin() {
+            if (passwordInput.value === CORRECT_PASSWORD) {
+                loginSection.style.display = 'none';
+                panelSection.style.display = 'block';
+                loginErrorMessage.textContent = '';
+                passwordInput.value = '';
+                sessionStorage.setItem('isLoggedIn', 'true');
+            } else {
+                loginErrorMessage.textContent = 'รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง';
+                passwordInput.value = '';
+                // เพิ่มเอฟเฟกต์สั่น
+                passwordInput.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    passwordInput.style.animation = '';
+                }, 500);
+            }
+        }
+
+        // Event Listeners
+        loginButton.addEventListener('click', performLogin);
+
+        passwordInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                performLogin();
+            }
+        });
+        
+        logoutButton.addEventListener('click', () => {
+            panelSection.style.display = 'none';
+            loginSection.style.display = 'block';
+            sessionStorage.removeItem('isLoggedIn');
+        });
+
+        // เปิดหน้าต่างๆ
+        bt50Link.addEventListener('click', () => {
+            window.open('bt50.html', '_blank');
+        });
+
+        receiptLink.addEventListener('click', () => {
+            window.open('receipt.html', '_blank');
+        });
+
+        workerLink.addEventListener('click', () => {
+            window.open('worker.html', '_blank');
+        });
+
+        // ตรวจสอบสถานะการเข้าสู่ระบบ
+        if (sessionStorage.getItem('isLoggedIn') === 'true') {
+            loginSection.style.display = 'none';
+            panelSection.style.display = 'block';
+        }
+
+        // เพิ่ม CSS สำหรับเอฟเฟกต์สั่น
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+

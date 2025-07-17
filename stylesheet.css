@@ -1,0 +1,15 @@
+@font-face {
+  font-family: "TH Sarabun New";
+  src: url("font CSS/subset-THSarabunNew-Bold.woff2") format("woff2"), url("font CSS/subset-THSarabunNew-Bold.woff")
+    format("woff");
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "TH Sarabun New";
+  src: url("font CSS/subset-THSarabunNew.woff2") format("woff2"), url("font CSS/subset-THSarabunNew.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}

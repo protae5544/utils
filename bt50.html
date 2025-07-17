@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="th" xml:lang="th">
+<head>
+  <title>ใบอนุญาตทำงาน</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2pdf library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style type="text/css">
+<!--
+    /* ประกาศฟอนต์ใหม่ */
+    @font-face {
+        font-family: 'THSarabunPsk';
+        src: url('https://oldqifkvaagtseibueaf.supabase.co/storage/v1/object/public/zzoo/ozz/ss-thsbn.woff2') format('woff2');
+        font-weight: normal;
+        font-style: normal;
+    }
+    @font-face {
+        font-family: 'THSarabunPsk';
+        src: url('https://oldqifkvaagtseibueaf.supabase.co/storage/v1/object/public/zzoo/ozz/ss-thsbn-bold.woff2') format('woff2');
+        font-weight: bold;
+        font-style: normal;
+    }
+  /* Reset default margins for p */
+    p { margin: 0; padding: 0; }
+    /* Print styles */
+    @media print {
+      .controls-container { display: none !important; }
+      body { margin: 0 !important; padding: 0 !important; background-color: white !important; }
+      #page1-div { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; }
+    }
+  </style>
+  <script type="text/javascript">
+    let allWorkerData = [];
+    let currentIndex = 0;
+    function setImageSrc(imgElementId, src, defaultSrc, workerName, type) {
+      const imgElement = document.getElementById(imgElementId);
+      if (!imgElement) {
+        console.error(`Image element with ID "${imgElementId}" not found.`);
+        return;
+      }
+      console.log(`Setting ${type} image for ${workerName || 'N/A'}`);
+      if (src && src.trim() !== '') {
+        imgElement.crossOrigin = "anonymous";
+        const testImage = new Image();
+        testImage.crossOrigin = "anonymous";
+        testImage.onload = function() {
+          console.log(`Successfully loaded ${type} image:`, src);
+          imgElement.src = src;
+        };
+        testImage.onerror = function() {
+          console.warn(`Failed to load ${type} image from "${src}" for ${workerName || 'N/A'}, using fallback.`);
+          imgElement.src = defaultSrc;
+        };
+        testImage.src = src;
+      } else {
+        console.warn(`${type} image URL is empty for ${workerName || 'N/A'}, using fallback.`);
+        imgElement.src = defaultSrc;
+      }
+    }
+    function loadWorkerData() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestNumberFromUrl = urlParams.get('id');
+      console.log("Loading data from combined-data.json...");
+      document.getElementById('requestNumber').innerHTML = '<b>Loading data...</b>';
+      fetch('combined-data.json')
+        .then(response => {
+          console.log("Response status:", response.status);
+          if (!response.ok) {
+            console.error(`HTTP error! status: ${response.status}`);
+            throw new Error('Failed to load combined-data.json or file does not exist.');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log("Data loaded successfully, record count:", data.length);
+          if (data.length > 0) console.log("First record sample:", data[0]);
+          if (!Array.isArray(data) || data.length === 0) {
+            throw new Error('Data in combined-data.json is empty or not a valid array.');
+          }
+          allWorkerData = data;
+          populateWorkerDropdown();
+          if (requestNumberFromUrl) {
+            console.log("Searching for ID from URL parameter:", requestNumberFromUrl);
+            currentIndex = allWorkerData.findIndex(w => w.requestNumber && w.requestNumber.toString() === requestNumberFromUrl.toString());
+            if (currentIndex === -1) {
+              currentIndex = 0;
+              console.warn(`Worker with request number "${requestNumberFromUrl}" not found. Displaying the first worker instead.`);
+            } else {
+              console.log("Worker found at index:", currentIndex);
+            }
+          } else {
+            currentIndex = 0;
+            console.log("No ID in URL parameter, displaying the first worker.");
+          }
+          displayWorkerData(currentIndex);
+        })
+        .catch(error => {
+          console.error('Error loading JSON:', error);
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'text-red-500 text-center mt-5 p-2 bg-red-100 border border-red-500 rounded';
+          errorDiv.innerHTML = `<p>Error loading data: ${error.message}</p>`;
+          document.body.prepend(errorDiv);
+          document.getElementById('requestNumber').innerHTML = '<b>Error</b>';
+          document.getElementById('englishName').innerHTML = '<b>Error</b>';
+        });
+    }
+    function populateWorkerDropdown() {
+      const dropdown = document.getElementById('workerDropdown');
+      if (!dropdown) return;
+      dropdown.innerHTML = '<option value="all">ทั้งหมด</option>';
+      allWorkerData.forEach((worker, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${worker.requestNumber || 'N/A'} - ${worker.thaiName || worker.englishName || 'N/A'}`;
+        dropdown.appendChild(option);
+      });
+    }
+    function displayWorkerData(index) {
+      if (index < 0 || index >= allWorkerData.length) {
+        console.error(`Index out of bounds: ${index}`);
+        return;
+      }
+      const worker = allWorkerData[index];
+      console.log("Displaying worker data for index:", index, worker);
+      document.getElementById('requestNumber').innerHTML = `<b>${worker.requestNumber || 'N/A'}</b>`;
+      document.getElementById('englishName').innerHTML = `<b>${worker.englishName || 'N/A'}</b>`;
+      document.getElementById('englishNameDuplicate').innerHTML = worker.englishName || 'N/A';
+      document.getElementById('thaiName').innerHTML = `: ${worker.thaiName || 'N/A'}`;
+      document.getElementById('personalID').innerHTML = `: ${worker.personalID || 'N/A'}`;
+      document.getElementById('workPermitNumber').innerHTML = `: ${worker.workPermitNumber || 'N/A'}`;
+      document.getElementById('alienReferenceNumber').innerHTML = `: ${worker.alienReferenceNumber || 'N/A'}`;
+      document.getElementById('nationality').innerHTML = `: ${worker.nationality || 'N/A'}`;
+      document.getElementById('age').innerHTML = `: ${worker.age || 'N/A'}`;
+      document.getElementById('birthDate').innerHTML = `: ${worker.birthDate || 'N/A'}`;
+      const defaultProfileSrc = 'https://via.placeholder.com/110x138?text=No+Image';
+      setImageSrc('profilePic', worker.profileImage, defaultProfileSrc, worker.englishName, 'profile picture');
+      const currentUrl = window.location.href;
+      const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+      const workerPageUrl = `${baseUrl}worker.html?id=${encodeURIComponent(worker.requestNumber || '')}`;
+      const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(workerPageUrl)}`;
+      const defaultQrCodeSrc = 'https://via.placeholder.com/69?text=No+QR';
+      setImageSrc('qrCode', qrCodeApiUrl, defaultQrCodeSrc, worker.englishName, 'QR code');
+      const now = new Date();
+      const thaiDate = now.toLocaleString('th-TH', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      }).replace(',', ' น.');
+      document.getElementById('timestamp').innerHTML = `เอกสารอิเล็กทรอนิกส์ฉบับนี้ถูกสร้างจากระบบอนุญาตทำงานคนต่างด้าวที่มีสถานะการทำงานไม่ถูกต้องตามกฎหมาย ตามมติคณะรัฐมนตรีเมื่อวันที่ 24 กันยายน 2567<br/>โดยกรมการจัดหางาน กระทรวงแรงงาน<br/>พิมพ์เอกสาร วันที่ ${thaiDate}`;
+      const dropdown = document.getElementById('workerDropdown');
+      if (dropdown) {
+        dropdown.value = index;
+      }
+    }
+    function showPreviousWorker() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        displayWorkerData(currentIndex);
+      } else {
+        alert('This is the first record.');
+      }
+    }
+    function showNextWorker() {
+      if (currentIndex < allWorkerData.length - 1) {
+        currentIndex++;
+        displayWorkerData(currentIndex);
+      } else {
+        alert('This is the last record.');
+      }
+    }
+    function handleWorkerChange() {
+      const dropdown = document.getElementById('workerDropdown');
+      const selectedValue = dropdown.value;
+      if (selectedValue !== 'all') {
+        currentIndex = parseInt(selectedValue);
+        displayWorkerData(currentIndex);
+      }
+    }
+    async function downloadPDF(workerItem, filenameSuffix = '') {
+      const element = document.getElementById('page1-div');
+      const filename = `${workerItem.requestNumber || 'worker'}_${workerItem.thaiName || workerItem.englishName || 'document'}${filenameSuffix}.pdf`;
+      const currentUrl = window.location.href;
+      const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+      const workerPageUrl = `${baseUrl}worker.html?id=${encodeURIComponent(workerItem.requestNumber || '')}`;
+      const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(workerPageUrl)}`;
+      const qrCodeElement = document.getElementById('qrCode');
+      if (allWorkerData[currentIndex].requestNumber !== workerItem.requestNumber) {
+        const tempIndex = allWorkerData.findIndex(w => w.requestNumber === workerItem.requestNumber);
+        if (tempIndex !== -1) displayWorkerData(tempIndex);
+      }
+      await new Promise(resolve => {
+        qrCodeElement.onload = resolve;
+        qrCodeElement.onerror = resolve;
+        setImageSrc('qrCode', qrCodeApiUrl, 'https://via.placeholder.com/69?text=No+QR', workerItem.englishName, 'QR code for PDF');
+        setTimeout(resolve, 1500);
+      });
+      const opt = {
+        margin: [0, 0, 0, 0],
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 3, useCORS: true, width: 892, height: 1261, scrollX: 0, scrollY: 0 },
+        jsPDF: { unit: 'px', format: [892, 1261], orientation: 'portrait', compress: true }
+      };
+      await html2pdf().set(opt).from(element).save();
+      if (allWorkerData[currentIndex].requestNumber !== workerItem.requestNumber) {
+        displayWorkerData(currentIndex);
+      }
+    }
+    async function downloadCurrentPDF() {
+      const controls = document.querySelector('.controls-container');
+      controls.style.display = 'none';
+      await downloadPDF(allWorkerData[currentIndex]);
+      controls.style.display = 'block';
+    }
+    async function downloadAllPDFs() {
+      const dropdown = document.getElementById('workerDropdown');
+      const selectedValue = dropdown.value;
+      const controls = document.querySelector('.controls-container');
+      controls.style.display = 'none';
+      if (selectedValue === 'all') {
+        alert(`Preparing to download ${allWorkerData.length} PDF files. Please wait...`);
+        for (let i = 0; i < allWorkerData.length; i++) {
+          displayWorkerData(i);
+          console.log(`Downloading PDF ${i + 1} of ${allWorkerData.length}: ${allWorkerData[i].requestNumber}`);
+          await downloadPDF(allWorkerData[i], `_batch_${i+1}`);
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        alert('All PDF downloads initiated.');
+        if (currentIndex >= 0 && currentIndex < allWorkerData.length) displayWorkerData(currentIndex);
+        else if (allWorkerData.length > 0) displayWorkerData(0);
+      } else {
+        await downloadPDF(allWorkerData[currentIndex]);
+      }
+      controls.style.display = 'block';
+    }
+    window.onload = loadWorkerData;
+  </script>
+</head>
+<body class="bg-gray-500">
+  <div class="controls-container fixed top-[1110px] right-2 bg-white/90 p-2 rounded-md shadow-md z-[1000] w-[250px]">
+    <select id="workerDropdown" onchange="handleWorkerChange()" class="w-full my-1 px-2 py-1 rounded border border-gray-300 font-['THSarabunPSK'] text-sm">
+      <option value="all">เลือกแรงงาน (ทั้งหมด)</option>
+    </select>
+    <button onclick="downloadCurrentPDF()" class="w-full my-1 px-2 py-1 rounded bg-green-500 text-white font-['THSarabunPSK'] text-sm hover:bg-green-600">ดาวน์โหลด PDF ปัจจุบัน</button>
+    <button onclick="downloadAllPDFs()" class="w-full my-1 px-2 py-1 rounded bg-green-500 text-white font-['THSarabunPSK'] text-sm hover:bg-green-600">ดาวน์โหลด PDF (ตามที่เลือก)</button>
+    <button onclick="showPreviousWorker()" class="w-full my-1 px-2 py-1 rounded bg-blue-500 text-white font-['THSarabunPSK'] text-sm hover:bg-blue-600">ก่อนหน้า</button>
+    <button onclick="showNextWorker()" class="w-full my-1 px-2 py-1 rounded bg-blue-500 text-white font-['THSarabunPSK'] text-sm hover:bg-blue-600">ถัดไป</button>
+  </div>
+  <div id="page1-div" class="relative w-[892px] h-[1261px] font-['THSarabunPSK'] text-black">
+    <img width="892" height="1261" src="bg5.svg" alt="background image"/>
+    <img class="logo" src="/placeholder.svg" alt=""/>
+    <img class="profile-pic absolute top-[46px] left-[725px] w-[110px] h-[138px] object-cover z-[100]" id="profilePic" src="https://via.placeholder.com/110x138?text=Loading" alt="Profile Picture"/>
+    <img class="qr-code absolute top-[977px] left-[762.5px] w-[69px] h-[69px] object-cover" id="qrCode" src="https://via.placeholder.com/69?text=Loading" alt="QR Code"/>
+    <p class="absolute top-[32px] left-[134px] whitespace-nowrap text-[21px] font-bold">ทะเบียนใบอนุญาตทำงานของคนต่างด้าวตามมติคณะรัฐมนตรี เมื่อวันที่ 24 กันยายน 2567</p>
+    <p class="absolute top-[57px] left-[134px] whitespace-nowrap text-[21px] font-bold text-red-500">เอกสารฉบับนี้ใช้แทนใบอนุญาตทำงาน</p>
+    <p class="absolute top-[87px] left-[158px] whitespace-nowrap text-[15px]">เลขรับที่ (No.)</p>
+    <p class="absolute top-[87px] left-[224px] whitespace-nowrap text-[14px]">:</p>
+    <p class="absolute top-[87px] left-[238px] whitespace-nowrap text-[15px] font-bold" id="requestNumber">xxxxxxx</p>
+    <p class="absolute top-[87px] left-[417px] whitespace-nowrap text-[15px]">วันที่อนุมัติ (Date)</p>
+    <p class="absolute top-[87px] left-[500px] whitespace-nowrap text-[14px]">:</p>
+    <p class="absolute top-[87px] left-[514px] whitespace-nowrap text-[15px] font-bold">06 มีนาคม 2568</p>
+    <p class="absolute top-[114px] left-[62px] whitespace-nowrap text-[15px]">ชื่อคนต่างด้าว (Name of Applicant)</p>
+    <p class="absolute top-[114px] left-[238px] whitespace-nowrap text-[15px] font-bold" id="englishName">xxxxxxxxxxxxx</p>
+    <p class="absolute top-[114px] left-[224px] whitespace-nowrap text-[14px]">:</p>
+    <p class="absolute top-[140px] left-[94px] whitespace-nowrap text-[15px]">เจ้าหน้าที่ (Name of Officer)</p>
+    <p class="absolute top-[140px] left-[224px] whitespace-nowrap text-[14px]">:</p>
+    <p class="absolute top-[140px] left-[238px] whitespace-nowrap text-[15px] font-bold">นายสมมาตร อนันต์ธราทรัพย์</p>
+    <p class="absolute top-[140px] left-[440px] whitespace-nowrap text-[15px]">นายทะเบียน</p>
+    <p class="absolute top-[140px] left-[500px] whitespace-nowrap text-[14px]">:</p>
+    <p class="absolute top-[167px] left-[238px] whitespace-nowrap text-[15px]">จัดหางานจังหวัดระยอง</p>
+    <p class="absolute top-[163px] left-[449px] whitespace-nowrap text-[15px]">(Registrar)</p>
+    <p class="absolute top-[163px] left-[546px] whitespace-nowrap text-[15px]">นายสมชาย มรกตศรีวรรณ</p>
+    <p class="absolute top-[182px] left-[555px] whitespace-nowrap text-[15px]">อธิบดีกรมการจัดหางาน</p>
+    <p class="absolute top-[201px] left-[577px] whitespace-nowrap text-[15px]">นายทะเบียน</p>
+    <p class="absolute top-[227px] left-[171px] whitespace-nowrap text-[16px] font-bold">ลงเลขรับและชำระค่ายื่นแบบคำขอ (REGISTERING APPLICATION FORM AND PAYING APPLICATION FEE)</p>
+    <p class="absolute top-[254px] left-[55px] whitespace-nowrap text-[15px] font-bold leading-[21px]">ข้อมูลคนต่างด้าว</p>
+    <p class="absolute top-[273px] left-[55px] whitespace-nowrap text-[14px]">สถานะใบอนุญาต</p>
+    <p class="absolute top-[278px] left-[199px] whitespace-nowrap text-[14px]">: อนุมัติ (รอพิมพ์บัตร)</p>
+    <p class="absolute top-[278px] left-[440px] whitespace-nowrap text-[14px]">ออกให้ ณ จังหวัด</p>
+    <p class="absolute top-[278px] left-[586px] whitespace-nowrap text-[14px]">: สำนักงานจัดหางานจังหวัดระยอง</p>
+    <p class="absolute top-[300px] left-[55px] whitespace-nowrap text-[14px]">เลขประจำตัวคนต่างด้าว</p>
+    <p class="absolute top-[300px] left-[199px] whitespace-nowrap text-[14px]" id="personalID">: 6685490000472</p>
+    <p class="absolute top-[300px] left-[440px] whitespace-nowrap text-[14px]">ใบอนุญาตทำงานเลขที่</p>
+    <p class="absolute top-[300px] left-[586px] whitespace-nowrap text-[14px]" id="workPermitNumber">: 5400689000472</p>
+    <p class="absolute top-[321px] left-[55px] whitespace-nowrap text-[14px]">ชื่อภาษาไทย</p>
+    <p class="absolute top-[321px] left-[199px] whitespace-nowrap text-[14px]" id="thaiName">: นาง เมย์ เท็ท โช</p>
+    <p class="absolute top-[321px] left-[440px] whitespace-nowrap text-[14px]">ชื่อภาษาอังกฤษ</p>
+    <p class="absolute top-[321px] left-[586px] whitespace-nowrap text-[14px]">:</p>
+    <p class="absolute top-[321px] left-[592px] whitespace-nowrap text-[14px]" id="englishNameDuplicate">MRS. MAY THET CHO</p>
+    <p class="absolute top-[343px] left-[55px] whitespace-nowrap text-[14px]">วัน/เดือน/ปี (พ.ศ.) เกิด</p>
+    <p class="absolute top-[343px] left-[199px] whitespace-nowrap text-[14px]" id="birthDate">: xx/xx/xx</p>
+    <p class="absolute top-[343px] left-[440px] whitespace-nowrap text-[14px]">อายุ (ปี)</p>
+    <p class="absolute top-[343px] left-[586px] whitespace-nowrap text-[14px]" id="age">: xx</p>
+    <p class="absolute top-[365px] left-[55px] whitespace-nowrap text-[14px]">สัญชาติ</p>
+    <p class="absolute top-[365px] left-[199px] whitespace-nowrap text-[14px]" id="nationality">: เมียนมา</p>
+    <p class="absolute top-[365px] left-[440px] whitespace-nowrap text-[14px]">สถานภาพ</p>
+    <p class="absolute top-[365px] left-[586px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[386px] left-[55px] whitespace-nowrap text-[14px]">ชื่อ-สกุล บิดา</p>
+    <p class="absolute top-[386px] left-[199px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[386px] left-[440px] whitespace-nowrap text-[14px]">ชื่อ-สกุล มารดา</p>
+    <p class="absolute top-[386px] left-[586px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[408px] left-[55px] whitespace-nowrap text-[14px]">เลขอ้างอิงคนต่างด้าว</p>
+    <p class="absolute top-[408px] left-[199px] whitespace-nowrap text-[14px]" id="alienReferenceNumber">: xxxxxxxxxxxxx</p>
+    <p class="absolute top-[429px] left-[55px] whitespace-nowrap text-[14px]">ที่อยู่อาศัย</p>
+    <p class="absolute top-[429px] left-[199px] whitespace-nowrap text-[14px]">: 36/6 หมู่ที่ 8 ตำบลมาบข่า อำเภอนิคมพัฒนา จังหวัดระยอง 21180</p>
+    <p class="absolute top-[449px] left-[55px] whitespace-nowrap text-[15px] font-bold leading-[21px]">ข้อมูลหนังสือเดินทาง และข้อมูลการตรวจลงตรา</p>
+    <p class="absolute top-[469px] left-[55px] whitespace-nowrap text-[14px]">เลขที่หนังสือเดินทาง</p>
+    <p class="absolute top-[472px] left-[199px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[472px] left-[440px] whitespace-nowrap text-[14px]">ประเภทหนังสือเดินทาง</p>
+    <p class="absolute top-[472px] left-[586px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[494px] left-[55px] whitespace-nowrap text-[14px]">สถานที่ออกหนังสือเดินทาง</p>
+    <p class="absolute top-[494px] left-[199px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[494px] left-[440px] whitespace-nowrap text-[14px]">ประเทศที่ออกหนังสือเดินทาง</p>
+    <p class="absolute top-[494px] left-[586px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[516px] left-[55px] whitespace-nowrap text-[14px]">วันที่ออกหนังสือเดินทาง</p>
+    <p class="absolute top-[516px] left-[199px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[516px] left-[440px] whitespace-nowrap text-[14px]">วันหมดอายุ</p>
+    <p class="absolute top-[516px] left-[586px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[537px] left-[55px] whitespace-nowrap text-[14px]">เลขที่ตรวจลงตรา</p>
+    <p class="absolute top-[537px] left-[199px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[559px] left-[55px] whitespace-nowrap text-[14px]">ออกให้วันที่</p>
+    <p class="absolute top-[559px] left-[199px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[559px] left-[440px] whitespace-nowrap text-[14px]">ใช้ได้ถึงวันที่</p>
+    <p class="absolute top-[559px] left-[586px] whitespace-nowrap text-[14px]">: -</p>
+    <p class="absolute top-[578px] left-[55px] whitespace-nowrap text-[15px] font-bold leading-[21px]">ข้อมูลนายจ้าง/สถานประกอบการ</p>
+    <p class="absolute top-[598px] left-[55px] whitespace-nowrap text-[14px]">เลขประจำตัวนายจ้าง</p>
+    <p class="absolute top-[602px] left-[199px] whitespace-nowrap text-[14px]">: 0415567000061</p>
+    <p class="absolute top-[602px] left-[440px] whitespace-nowrap text-[14px]">ชื่อนายจ้าง/สถานประกอบการ</p>
+    <p class="absolute top-[602px] left-[586px] whitespace-nowrap text-[14px]">: บริษัท บาน กง เอ็นจิเนียริ่ง จำกัด</p>
+    <p class="absolute top-[623px] left-[55px] whitespace-nowrap text-[14px]">ประเภทกิจการ</p>
+    <p class="absolute top-[623px] left-[199px] whitespace-nowrap text-[14px]">: BT04 - กิจการก่อสร้าง</p>
+    <p class="absolute top-[645px] left-[55px] whitespace-nowrap text-[14px]">ที่ตั้งสำนักงาน</p>
+    <p class="absolute top-[645px] left-[199px] whitespace-nowrap text-[14px]">: 102 หมู่ที่ 8 ถนนอุดรธานี-ขอนแก่น ตำบลโนนสูง อำเภอเมืองอุดรธานี จังหวัดอุดรธานี 41000</p>
+    <p class="absolute top-[666px] left-[55px] whitespace-nowrap text-[15px] font-bold leading-[21px]">ข้อมูลการทำงาน</p>
+    <p class="absolute top-[684px] left-[55px] whitespace-nowrap text-[14px]">ทำงานในตำแหน่ง</p>
+    <p class="absolute top-[688px] left-[199px] whitespace-nowrap text-[14px]">: กรรมกร</p>
+    <p class="absolute top-[688px] left-[440px] whitespace-nowrap text-[14px]">ลักษณะงาน</p>
+    <p class="absolute top-[688px] left-[586px] whitespace-nowrap text-[14px]">: กรรมกร (กิจการก่อสร้าง)</p>
+    <p class="absolute top-[710px] left-[55px] whitespace-nowrap text-[14px]">สถานที่ทำงาน</p>
+    <p class="absolute top-[710px] left-[199px] whitespace-nowrap text-[14px]">: 36/6 หมู่ที่ 8 ตำบลมาบข่า อำเภอนิคมพัฒนา จังหวัดระยอง 21180</p>
+    <p class="absolute top-[731px] left-[55px] whitespace-nowrap text-[14px]">อนุญาตให้ทำงานถึงวันที่</p>
+    <p class="absolute top-[731px] left-[199px] whitespace-nowrap text-[14px]">: 31 มีนาคม 2569</p>
+    <p class="absolute top-[755px] left-[55px] whitespace-nowrap text-[15px] font-bold leading-[21px]">ข้อมูลสิทธิการรักษาพยาบาล</p>
+    <p class="absolute top-[775px] left-[55px] whitespace-nowrap text-[15px] leading-[21px]">ประกันสังคม</p>
+    <p class="absolute top-[796px] left-[55px] whitespace-nowrap text-[15px] leading-[21px]">ประกันสุขภาพ สิ้นสุดวันที่ 30/09/2025</p>
+    <p class="absolute top-[825px] left-[55px] whitespace-nowrap text-[14px] font-bold leading-[19px]">เงื่อนไข</p>
+    <p class="absolute top-[841px] left-[85px] whitespace-nowrap text-[14px] leading-[19px]">คนต่างด้าวจะต้องทำประกันสุขภาพตลอดระยะเวลาการอนุญาตให้ทำงาน หากปรากฎว่าระยะเวลาการทำประกันสุขภาพสิ้นสุดลง ก่อนระยะเวลาการอนุญาตให้ทำงาน</p>
+    <p class="absolute top-[857px] left-[55px] whitespace-nowrap text-[14px] leading-[19px]">นายทะเบียนจะเพิกถอนใบอนุญาตทำงาน ซึ่งมีผลให้การอนุญาตให้อยู่ในราชอาณาจักรสิ้นสุดลง</p>
+    <p class="absolute top-[885px] left-[55px] whitespace-nowrap text-[14px] font-bold leading-[19px]">คำเตือน</p>
+    <p class="absolute top-[905px] left-[85px] whitespace-nowrap text-[14px] leading-[19px]">เมื่อได้รับอนุญาตให้ทำงานแล้วคนต่างด้าวต้องดำเนินการดังต่อไปนี้ มิเช่นนั้น การอนุญาตให้ทำงานและการอนุญาตให้อยู่ในราชอาณาจักรของคนต่างด้าวจะสิ้นสุดลง</p>
+    <p class="absolute top-[922px] left-[55px] whitespace-nowrap text-[14px] leading-[19px]">1. จัดเก็บข้อมูลอัตลักษณ์บุคคล ภายในวันที่ 28 มิถุนายน 2568</p>
+    <p class="absolute top-[939px] left-[55px] whitespace-nowrap text-[14px] leading-[19px]">2. จัดทำหรือปรับปรุงทะเบียนประวัติตามกฎหมายว่าด้วยการทะเบียนราษฎร ภายในวันที่ 31 มีนาคม 2569</p>
+    <p class="absolute top-[1000px] left-[55px] text-[14px] leading-[19px]" id="timestamp">เอกสารอิเล็กทรอนิกส์ฉบับนี้ถูกสร้างจากระบบอนุญาตทำงานคนต่างด้าวที่มีสถานะการทำงานไม่ถูกต้องตามกฎหมาย ตามมติคณะรัฐมนตรีเมื่อวันที่ 24 กันยายน 2567<br/>โดยกรมการจัดหางาน กระทรวงแรงงาน<br/>พิมพ์เอกสาร วันที่ 'Loading...'</p>
+  </body>
+</html>
